@@ -1,0 +1,38 @@
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { translations, type Lang, type Translations } from '@/lib/i18n';
+
+interface LangContextValue {
+  lang: Lang;
+  t: Translations;
+  toggleLang: () => void;
+}
+
+const LangContext = createContext<LangContextValue>({
+  lang: 'th',
+  t: translations.th,
+  toggleLang: () => {},
+});
+
+export function LangProvider({ children }: { children: ReactNode }) {
+  const [lang, setLang] = useState<Lang>(() => {
+    const saved = localStorage.getItem('vocab-quest-lang');
+    return saved === 'en' ? 'en' : 'th';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('vocab-quest-lang', lang);
+    document.documentElement.lang = lang;
+  }, [lang]);
+
+  const toggleLang = () => setLang((l) => (l === 'th' ? 'en' : 'th'));
+
+  return (
+    <LangContext.Provider value={{ lang, t: translations[lang], toggleLang }}>
+      {children}
+    </LangContext.Provider>
+  );
+}
+
+export function useLang() {
+  return useContext(LangContext);
+}
